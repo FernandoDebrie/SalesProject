@@ -9,6 +9,7 @@
 <div class="col-md-6">
     <form asp-action="Edit">
         <div class="form-group">
+            <input type="hidden" asp-for="Seller.Id"/>
             <label asp-for="Seller.Name" class="control-label"></label>
             <input type="text" asp-for="Seller.Name" class="form-control" />
         </div>
