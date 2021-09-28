@@ -3,6 +3,8 @@ using SalesWebMvc.Models;
 using SalesWebMvc.Models.ViewModels;
 using SalesWebMvc.Services;
 using SalesWebMvc.Services.Exceptions;
+using System;
+using System.Diagnostics;
 
 namespace SalesWebMvc.Controllers
 {
@@ -43,15 +45,25 @@ namespace SalesWebMvc.Controllers
 
         public IActionResult Delete(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
+            }
             var obj = _sellerServices.GetForId(id.Value);
             if (obj == null) return NotFound();
             return View(obj);
         }
-        public IActionResult Details(int id)
+        public IActionResult Details(int? id)
         {
-            var seller = _sellerServices.GetForId(id);   
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
+            }
+            var seller = _sellerServices.GetForId(id.Value);
+            
+            if (seller == null) return NotFound();
             return View(seller);
+
         }
 
         [HttpPost]
@@ -72,15 +84,11 @@ namespace SalesWebMvc.Controllers
                 _sellerServices.Update(seller);
                 return RedirectToAction(nameof(Index));
             }
-            catch (NotFoundException)
+            catch (ApplicationException e)
             {
-                return NotFound();
-            }
-            catch (DbConcurrencyException)
-            {
-                return BadRequest();
-            }
-           
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }         
+
         }
 
         [HttpPost]
@@ -89,6 +97,16 @@ namespace SalesWebMvc.Controllers
         {
             _sellerServices.Delete(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+            return View(viewModel);
         }
     }
 }
