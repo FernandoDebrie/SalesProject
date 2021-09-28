@@ -29,7 +29,6 @@ namespace SalesWebMvc.Controllers
             return View(viewModel);
         }
 
-        [HttpGet]
         public IActionResult Edit(int id)
         {
             var seller = _sellerServices.GetForId(id);
@@ -39,6 +38,14 @@ namespace SalesWebMvc.Controllers
             
 
             return View(viewModel);
+        }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null) return NotFound();
+            var obj = _sellerServices.GetForId(id.Value);
+            if (obj == null) return NotFound();
+            return View(obj);
         }
 
         [HttpPost]
@@ -53,6 +60,14 @@ namespace SalesWebMvc.Controllers
         public IActionResult Edit(SellerFormViewModel sellerViewModel)
         {          
             _sellerServices.Insert(sellerViewModel.Seller);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            _sellerServices.Delete(id);
             return RedirectToAction(nameof(Index));
         }
     }
