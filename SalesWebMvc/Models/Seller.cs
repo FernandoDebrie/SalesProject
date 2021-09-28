@@ -11,9 +11,12 @@ namespace SalesWebMvc.Models
         {
         }
         public int Id { get; set; }
+        [Required(ErrorMessage ="{0} required")]
+        [StringLength(60, MinimumLength =3, ErrorMessage ="{0} Name size should be between {1} and {2}")]
         public string Name { get; set; }
         
         [DataType(DataType.EmailAddress)]
+        [EmailAddress(ErrorMessage ="Enter a valid email")]
         public string Email { get; set; }
         
         [Display(Name="Birth Date")]
