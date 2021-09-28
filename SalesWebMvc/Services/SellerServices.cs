@@ -1,9 +1,7 @@
 ﻿using SalesWebMvc.Data;
 using SalesWebMvc.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SalesWebMvc.Services
 {
@@ -24,6 +22,10 @@ namespace SalesWebMvc.Services
         {
             _context.Seller.Add(seller);
             _context.SaveChanges();
+        }
+        public Seller GetForId(int id)
+        {
+            return _context.Seller.FirstOrDefault(s => s.Id == id);
         }
     }
 }
