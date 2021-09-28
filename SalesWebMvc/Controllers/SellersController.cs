@@ -33,9 +33,7 @@ namespace SalesWebMvc.Controllers
         {
             var seller = _sellerServices.GetForId(id);
             var departments = _departmentService.FindAll();
-
-            var viewModel = new SellerFormViewModel() {Seller = seller, Departments = departments};
-            
+            var viewModel = new SellerFormViewModel() {Seller = seller, Departments = departments};           
 
             return View(viewModel);
         }
@@ -46,6 +44,11 @@ namespace SalesWebMvc.Controllers
             var obj = _sellerServices.GetForId(id.Value);
             if (obj == null) return NotFound();
             return View(obj);
+        }
+        public IActionResult Details(int id)
+        {
+            var seller = _sellerServices.GetForId(id);   
+            return View(seller);
         }
 
         [HttpPost]
