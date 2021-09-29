@@ -5,6 +5,7 @@ using SalesWebMvc.Services;
 using SalesWebMvc.Services.Exceptions;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SalesWebMvc.Controllers
 {
@@ -19,47 +20,47 @@ namespace SalesWebMvc.Controllers
             _departmentService = departmentService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var lista = _sellerServices.FindAll();
+            var lista = await _sellerServices.FindAllAsync();
             return View(lista);
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAll();
+            var departments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel() {Departments = departments };
 
             return View(viewModel);
         }
 
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var seller = _sellerServices.GetForId(id.Value);
-            var departments = _departmentService.FindAll();
+            var seller = await _sellerServices.GetForIdAsync(id.Value);
+            var departments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel() {Seller = seller, Departments = departments};           
 
             return View(viewModel);
         }
 
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
-            var obj = _sellerServices.GetForId(id.Value);
+            var obj = await _sellerServices.GetForIdAsync(id.Value);
             if (obj == null) return NotFound();
             return View(obj);
         }
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
-            var seller = _sellerServices.GetForId(id.Value);
+            var seller = await _sellerServices.GetForIdAsync(id.Value);
             
             if (seller == null) return NotFound();
             return View(seller);
@@ -68,39 +69,50 @@ namespace SalesWebMvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Seller seller)
+        public async Task<IActionResult> Create(Seller seller)
         {
             if (!ModelState.IsValid) return View(seller);
 
-            _sellerServices.Insert(seller);
+            await _sellerServices.InsertAsync(seller);
             return RedirectToAction(nameof(Index));
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
-            if (!ModelState.IsValid) return View(seller);
+            if (!ModelState.IsValid)
+            {
+                var departments = await _departmentService.FindAllAsync();
+                SellerFormViewModel obj = new SellerFormViewModel() { Seller = seller, Departments = departments };                
+            }
 
             if (seller.Id != id) return BadRequest();
 
             try
             {
-                _sellerServices.Update(seller);
+               await _sellerServices.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)
             {
                 return RedirectToAction(nameof(Error), new { message = e.Message });
             }         
-
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _sellerServices.Delete(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerServices.DeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public IActionResult Error(string message)
